@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package erda.pipeline;
+
+option go_package = "github.com/erda-project/erda-proto-go/pipeline/pb";
+
+service QueueService {
+  rpc CreateQueue (QueueCreateRequest) returns (QueueCreateResponse);
+}
+
+message QueueCreateRequest {
+    string name = 1;
+}
+
+message QueueCreateResponse {
+    bool success = 1;
+}
