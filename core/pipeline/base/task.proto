@@ -1,0 +1,96 @@
+syntax = "proto3";
+
+package erda.core.pipeline.base;
+
+import "google/protobuf/timestamp.proto";
+import "github.com/erda-project/erda-proto/core/pipeline/base/metadata.proto";
+import "github.com/erda-project/erda-proto/core/pipeline/base/pipelineyaml.proto";
+
+option go_package = "github.com/erda-project/erda-proto-go/core/pipeline/base/pb";
+
+message PipelineTask {
+  uint64 ID = 1 [json_name = "id"];
+  uint64 pipelineID = 2;
+  uint64 stageID = 3;
+  string name = 4;
+  string type = 5;
+  string status = 6;
+  PipelineTaskExtra extra = 7;
+  map<string, string> labels = 8;
+  PipelineTaskResult result = 9;
+  bool isSnippet = 10;
+  uint64 snippetPipelineID = 11;
+  PipelineTaskSnippetDetail snippetPipelineDetail = 12; // detail of snippet pipeline
+  int64 costTimeSec = 13; // -1 means no cost info, 0 means cost 0s exactly
+  int64 queueTimeSec = 14;
+  google.protobuf.Timestamp timeBegin = 15;
+  google.protobuf.Timestamp timeEnd = 16;
+  google.protobuf.Timestamp timeCreated = 17;
+  google.protobuf.Timestamp timeUpdated = 18;
+}
+message PipelineTaskExtra {
+  string UUID = 1 [json_name = "uuid"];
+  bool allowFailure = 2;
+}
+message PipelineTaskResult {
+  repeated erda.core.pipeline.base.MetadataField metadata = 1;
+  repeated erda.core.pipeline.base.ErrorResponse errors = 2;
+  PipelineTaskMachineStat machineStat = 3;
+}
+message PipelineTaskSnippetDetail {
+  repeated PipelineOutputWithValue outputs = 1;
+  // direct snippet task number, won't query recursively.
+  // -1 means UNKNOWN, concrete value assigned when reconcile.
+  int64 directSnippetTaskNum = 2;
+  // recursive snippet task number, i.e. the whole expanded tasks number.
+  // -1 means UNKNOWN, concrete value will be reported by AOP.
+  int64 recursiveSnippetTaskNum = 3;
+}
+
+message PipelineTaskMachineStat {
+  PipelineTaskMachineHostStat host = 1;
+  PipelineTaskMachinePodStat pod = 2;
+  PipelineTaskMachineLoadStat load = 3;
+  PipelineTaskMachineMemStat mem = 4;
+  PipelineTaskMachineSwapStat swap = 5;
+}
+message PipelineTaskMachineHostStat {
+  string hostIP = 1;
+  string hostname = 2;
+  uint64 uptimeSec = 3;
+  uint64 bootTimeSec = 4;
+  string OS = 5 [json_name = "os"];
+  string platform = 6;
+  string platformVersion = 7;
+  string kernelVersion = 8;
+  string kernelArch = 9;
+}
+message PipelineTaskMachinePodStat {
+  string podIP = 1;
+}
+message PipelineTaskMachineLoadStat {
+  double load1 = 1;
+  double load5 = 2;
+  double load15 = 3;
+}
+message PipelineTaskMachineMemStat {
+  uint64 total = 1;
+  uint64 available = 2;
+  uint64 used = 3;
+  uint64 free = 4;
+  double usedPercent = 5;
+  uint64 buffers = 6;
+  uint64 cached = 7;
+}
+message PipelineTaskMachineSwapStat {
+  uint64 total = 1;
+  uint64 used = 2;
+  uint64 free = 3;
+  double usedPercent = 4;
+}
+
+message PipelineTaskActionDetail {
+  string logoUrl = 1;
+  string displayName = 2;
+  string description = 3;
+}

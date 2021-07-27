@@ -1,0 +1,187 @@
+syntax = "proto3";
+
+package erda.core.pipeline.base;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+import "github.com/mwitkow/go-proto-validators/validator.proto";
+import "github.com/erda-project/erda-proto/common/identity.proto";
+import "github.com/erda-project/erda-proto/common/commit.proto";
+import "github.com/erda-project/erda-proto/core/pipeline/queue/queue.proto";
+import "github.com/erda-project/erda-proto/core/pipeline/base/stage.proto";
+import "github.com/erda-project/erda-proto/core/pipeline/base/task.proto";
+import "github.com/erda-project/erda-proto/core/pipeline/cron/cron.proto";
+import "github.com/erda-project/erda-proto/core/pipeline/base/pipelineyaml.proto";
+import "github.com/erda-project/erda-proto/core/pipeline/base/event.proto";
+
+option go_package = "github.com/erda-project/erda-proto-go/core/pipeline/base/pb";
+
+message PipelineInstance {
+  // base
+  uint64 ID = 1 [json_name = "id"];
+  string source = 2;
+  string ymlName = 3;
+  string namespace = 4;
+  string clusterName = 5;
+  string status = 6;
+  string type = 7;
+  string triggerMode = 8;
+  uint64 cronID = 9;
+  map<string, string> labels = 10;
+  string ymlSource = 11;
+  string ymlContent = 12;
+  PipelineExtra extra = 13;
+
+  // app related info
+  uint64 orgID = 14;
+  string orgName = 15;
+  uint64 projectID = 16;
+  string projectName = 17;
+  uint64 applicationID = 18;
+  string applicationName = 19;
+  string branch = 20;
+  string commit = 21;
+  common.CommitDetail commitDetail = 22;
+
+  // runtime info
+  double progress = 23;
+  int64 costTimeSec = 24;
+  google.protobuf.Timestamp timeBegin = 25;
+  google.protobuf.Timestamp timeEnd = 26;
+  google.protobuf.Timestamp timeCreated = 27;
+  google.protobuf.Timestamp timeUpdated = 28;
+}
+message PipelineExtra {
+  string diceWorkspace = 1;
+  PipelineUser submitUser = 2;
+  PipelineUser runUser = 3;
+  PipelineUser cancelUser = 4;
+  string cronExpr = 5;
+  google.protobuf.Timestamp cronTriggerTime = 6;
+  ShowMessage show_message = 7;
+  repeated string configManageNamespaces = 8;
+  bool isAutoRun = 9;
+  repeated string callbackURLs = 10;
+}
+message PipelineInstanceDetail {
+  // TODO embed
+  // base
+  uint64 ID = 1 [json_name = "id"];
+  string source = 2;
+  string ymlName = 3;
+  string namespace = 4;
+  string clusterName = 5;
+  string status = 6;
+  string type = 7;
+  string triggerMode = 8;
+  uint64 cronID = 9;
+  map<string, string> labels = 10;
+  string ymlSource = 11;
+  string ymlContent = 12;
+  PipelineExtra extra = 13;
+
+  // app related info
+  uint64 orgID = 14;
+  string orgName = 15;
+  uint64 projectID = 16;
+  string projectName = 17;
+  uint64 applicationID = 18;
+  string applicationName = 19;
+  string branch = 20;
+  string commit = 21;
+  common.CommitDetail commitDetail = 22;
+
+  // runtime info
+  double progress = 23;
+  int64 costTimeSec = 24;
+  google.protobuf.Timestamp timeBegin = 25;
+  google.protobuf.Timestamp timeEnd = 26;
+  google.protobuf.Timestamp timeCreated = 27;
+  google.protobuf.Timestamp timeUpdated = 28;
+
+  // additional fields
+  repeated erda.core.pipeline.base.PipelineStageDetail pipelineStages = 29;
+  repeated erda.core.pipeline.base.PipelineStageDetail pipelineSnippetStages = 30;
+  core.pipeline.cron.PipelineCron pipelineCron = 31;
+  PipelineButton pipelineButton = 32;
+  map<string, erda.core.pipeline.base.PipelineTaskActionDetail> pipelineTaskActionDetails = 33;
+  repeated erda.core.pipeline.base.PipelineParamWithValue runParams = 34;
+  repeated erda.core.pipeline.base.PipelineEvent events = 35;
+  bool needApproval = 36;
+}
+message PipelineGC {
+  PipelineResourceGC resourceGC = 1;
+  PipelineDatabaseGC databaseGC = 2;
+}
+// PipelineResourceGC releases occupied resource by pipeline, such as:
+// - k8s pv (netdata volume)
+// - k8s pod
+// - k8s namespace
+message PipelineResourceGC {
+  // SuccessTTLSecond means when to release resource if pipeline status is Success.
+  // Normally success ttl should be small even to zero, because everything is ok and don't need to rerun.
+  // Default is 1800s(30min)
+  uint64 successTTLSecond = 1;
+  // FailedTTLSecond means when to release resource if pipeline status is Failed.
+  // Normally failed ttl should larger than SuccessTTLSecond, because you may want to rerun this failed pipeline,
+  // which need these resource.
+  // Default is 1800s.
+  uint64 failedTTLSecond = 2;
+}
+// PipelineDatabaseGC represents database record gc strategy.
+message PipelineDatabaseGC {
+  PipelineDBGCItem analyzed = 1;
+  PipelineDBGCItem finished = 2;
+}
+message PipelineDBGCItem {
+  // NeedArchive means whether this record need be archived:
+  // If true, archive record to specific archive table;
+  // If false, delete record and cannot be found anymore.
+  bool needArchive = 1;
+  // TTLSecond means when to do archive or delete operation.
+  uint64 TTLSecond = 2 [json_name = "ttlSecond"];
+}
+message PipelineRunParam {
+  string name = 1;
+  google.protobuf.Value value = 2;
+}
+message PipelineRunParamWithValue {
+  string name = 1;
+  google.protobuf.Value value = 2; // parsed from pipeline.yml
+  google.protobuf.Value trueValue = 3; // true value: placeholders will be replaced
+}
+message PipelineUser {
+  string ID = 1 [json_name = "id"];
+  string name = 2;
+  string avatar = 3;
+}
+message ShowMessage {
+  string msg = 1;
+  repeated string stacks = 2;
+  bool abortRun = 3; // if false, canManualRun should be false
+}
+message StorageConfig {
+  bool enableNfs = 1;
+  bool enableLocal = 2;
+}
+message PipelineButton {
+  bool canManualRun = 1;
+  bool canCancel = 2;
+  bool canForceCancel = 3;
+  bool canRerun = 4;
+  bool canRerunFailed = 5;
+  bool canStartCron = 6;
+  bool canStopCron = 7;
+  bool canPause = 8;
+  bool canUnpause = 9;
+  bool canDelete = 10;
+}
+message PipelineExecuteRecord {
+  uint64 PipelineID = 1;
+  string status = 2;
+  string triggerMode = 3;
+  google.protobuf.Timestamp timeCreated = 4;
+  google.protobuf.Timestamp timeBegin = 5;
+  google.protobuf.Timestamp timeEnd = 6;
+}

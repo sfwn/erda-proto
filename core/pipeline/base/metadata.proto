@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package erda.core.pipeline.base;
+
+import "google/protobuf/struct.proto";
+
+option go_package = "github.com/erda-project/erda-proto-go/core/pipeline/base/pb";
+
+message MetadataField {
+  string name = 1;
+  string value = 2;
+  string type = 3;
+  bool optional = 4;
+  map<string, string> labels = 5;
+  string level = 6;
+}
+message ErrorResponse {
+  string code = 1;
+  string msg = 2;
+  google.protobuf.Value ctx = 3;
+}

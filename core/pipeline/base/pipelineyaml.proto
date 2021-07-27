@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package erda.core.pipeline.base;
+
+import "google/protobuf/struct.proto";
+
+option go_package = "github.com/erda-project/erda-proto-go/core/pipeline/base/pb";
+
+message PipelineOutput {
+  string name = 1;
+  string desc = 2;
+  string ref = 3;
+}
+message PipelineOutputWithValue {
+  string name = 1;
+  string desc = 2;
+  string ref = 3;
+  google.protobuf.Value value = 4;
+}
+
+message PipelineParam {
+  string name = 1;
+  bool required = 2;
+  google.protobuf.Value default = 3;
+  string desc = 4;
+  string type = 5;
+}
+message PipelineParamWithValue {
+  string name = 1;
+  bool required = 2;
+  google.protobuf.Value default = 3;
+  string desc = 4;
+  string type = 5;
+
+  google.protobuf.Value value = 6;
+}

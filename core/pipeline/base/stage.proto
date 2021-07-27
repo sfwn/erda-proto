@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package erda.core.pipeline.base;
+
+import "google/protobuf/timestamp.proto";
+import "github.com/erda-project/erda-proto/core/pipeline/base/task.proto";
+
+message PipelineStage {
+  uint64 ID = 1 [json_name = "id"];
+  uint64 pipelineID = 2;
+  string name = 3;
+  string status = 4;
+  int64  costTimeSec = 5;
+  google.protobuf.Timestamp timeBegin = 6;
+  google.protobuf.Timestamp timeEnd = 7;
+  google.protobuf.Timestamp timeCreated = 8;
+  google.protobuf.Timestamp timeUpdated = 9;
+}
+message PipelineStageDetail {
+  uint64 ID = 1 [json_name = "id"];
+  uint64 pipelineID = 2;
+  string name = 3;
+  string status = 4;
+  int64  costTimeSec = 5;
+  google.protobuf.Timestamp timeBegin = 6;
+  google.protobuf.Timestamp timeEnd = 7;
+  google.protobuf.Timestamp timeCreated = 8;
+  google.protobuf.Timestamp timeUpdated = 9;
+
+  repeated erda.core.pipeline.base.PipelineTask pipelineTasks = 10;
+}

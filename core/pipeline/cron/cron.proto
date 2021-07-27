@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package erda.core.pipeline.cron;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+import "github.com/mwitkow/go-proto-validators/validator.proto";
+import "github.com/erda-project/erda-proto/common/identity.proto";
+import "github.com/erda-project/erda-proto/common/commit.proto";
+
+option go_package = "github.com/erda-project/erda-proto-go/core/pipeline/cron/pb";
+
+message PipelineCron {
+  uint64 ID = 1 [json_name="id"];
+  google.protobuf.Timestamp timeCreated = 2;
+  google.protobuf.Timestamp timeUpdated = 3;
+
+  string cronExpr = 4;
+  google.protobuf.Timestamp cronStartTime = 5;
+  string pipelineYmlName = 6;
+  bool enable = 7;
+}

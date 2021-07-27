@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package erda.core.pipeline.queue;
+
+import "github.com/mwitkow/go-proto-validators/validator.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/any.proto";
+import "github.com/erda-project/erda-proto/common/identity.proto";
+
+option go_package = "github.com/erda-project/erda-proto-go/core/pipeline/queue/pb";
+
+message Queue {
+  uint64 ID = 1 [json_name = "id"];
+  string name = 2;
+  string pipelineSource = 3;
+  string clusterName = 4;
+  string scheduleStrategy = 5;
+  string mode = 6;
+  int64 priority = 7;
+  int64 concurrency = 8;
+  double maxCPU = 9;
+  double maxMemoryMB = 10;
+  map<string, string> labels = 11;
+  google.protobuf.Timestamp timeCreated = 12;
+  google.protobuf.Timestamp timeUpdated = 13;
+  QueueUsage usage = 14;
+}
+message QueueUsage {
+  double inUseCPU = 1;
+  double inUseMemoryMB = 2;
+  double remainingCPU = 3;
+  double remainingMemoryMB = 4;
+  int64 processingCount = 5;
+  int64 pendingCount = 6;
+  repeated QueueUsageItem processingDetails = 7;
+  repeated QueueUsageItem pendingDetails = 8;
+}
+message QueueUsageItem {
+  uint64 pipelineID = 1;
+  double requestsCPU = 2;
+  double requestsMemoryMB = 3;
+  int64 index = 4;
+  int64 priority = 5;
+  google.protobuf.Timestamp addedTime = 6;
+}
